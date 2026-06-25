@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Budgets - FinTrack{% endblock %}
+{% block page_title %}Budgets{% endblock %}
+{% block page_subtitle %}Track spending against your monthly limits{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-4">
+  <a href="{{ url_for('budgets.create') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> Create Budget
+  </a>
+</div>
+
+{% if budget_data %}
+<div class="row g-4">
+  {% for item in budget_data %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card budget-card h-100 {% if item.over_budget %}border-danger{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="card-title mb-1">{{ item.budget.category }}</h5>
+            <p class="text-muted small mb-0">Monthly budget</p>
+          </div>
+          {% if item.over_budget %}
+            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Over Budget</span>
+          {% elif item.raw_percentage >= 80 %}
+            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle me-1"></i>Warning</span>
+          {% else %}
+            <span class="badge bg-success-subtle text-success">On Track</span>
+          {% endif %}
+        </div>
+
+        <div class="budget-amounts mb-3">
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Spent</span>
+            <span class="fw-semibold {% if item.over_budget %}text-danger{% endif %}">{{ item.spent | currency }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Limit</span>
+            <span>{{ item.budget.monthly_limit | currency }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Remaining</span>
+            <span class="{% if item.remaining == 0 and item.over_budget %}text-danger{% else %}text-success{% endif %}">
+              {{ item.remaining | currency }}
+            </span>
+          </div>
+        </div>
+
+        <div class="progress budget-progress mb-2" style="height: 10px;">
+          <div class="progress-bar {% if item.over_budget %}bg-danger{% elif item.raw_percentage >= 80 %}bg-warning{% else %}bg-primary{% endif %}"
+               role="progressbar"
+               style="width: {{ item.percentage }}%"
+               aria-valuenow="{{ item.raw_percentage | round(1) }}"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
+        </div>
+        <p class="small text-muted mb-3">{{ item.raw_percentage | round(1) }}% of budget used</p>
+
+        {% if item.over_budget %}
+        <div class="alert alert-danger py-2 small mb-3">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          You've exceeded your {{ item.budget.category }} budget by {{ (item.spent - item.budget.monthly_limit) | currency }}.
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('budgets.edit', budget_id=item.budget.id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit
+          </a>
+          <form method="POST" action="{{ url_for('budgets.delete', budget_id=item.budget.id) }}" onsubmit="return confirm('Delete this budget?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash me-1"></i> Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body text-center py-5 text-muted">
+    <i class="bi bi-piggy-bank fs-1 d-block mb-3"></i>
+    <h5>No budgets yet</h5>
+    <p>Set monthly spending limits by category to stay on track.</p>
+    <a href="{{ url_for('budgets.create') }}" class="btn btn-primary">Create Your First Budget</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

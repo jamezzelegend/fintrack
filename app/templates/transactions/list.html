@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - FinTrack{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+{% block page_subtitle %}Manage your income and expenses{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" class="form-control" placeholder="Description..." value="{{ filters.q }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">From</label>
+        <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">To</label>
+        <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Sort By</label>
+        <select name="sort" class="form-select">
+          <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>Date</option>
+          <option value="amount" {% if filters.sort == 'amount' %}selected{% endif %}>Amount</option>
+          <option value="category" {% if filters.sort == 'category' %}selected{% endif %}>Category</option>
+          <option value="type" {% if filters.sort == 'type' %}selected{% endif %}>Type</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">Order</label>
+        <select name="order" class="form-select">
+          <option value="desc" {% if filters.order == 'desc' %}selected{% endif %}>Desc</option>
+          <option value="asc" {% if filters.order == 'asc' %}selected{% endif %}>Asc</option>
+        </select>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-funnel me-1"></i> Filter
+        </button>
+        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline-secondary">Reset</a>
+        <a href="{{ url_for('transactions.create') }}" class="btn btn-success ms-auto">
+          <i class="bi bi-plus-lg me-1"></i> Add Transaction
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th class="text-end">Amount</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td>{{ tx.transaction_date.strftime('%b %d, %Y') }}</td>
+          <td>{{ tx.description }}</td>
+          <td><span class="badge bg-light text-dark">{{ tx.category }}</span></td>
+          <td>
+            {% if tx.transaction_type == 'Income' %}
+              <span class="badge bg-success-subtle text-success">Income</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger">Expense</span>
+            {% endif %}
+          </td>
+          <td class="text-end fw-semibold {% if tx.transaction_type == 'Income' %}text-success{% else %}text-danger{% endif %}">
+            {% if tx.transaction_type == 'Income' %}+{% else %}-{% endif %}{{ tx.amount | currency }}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('transactions.edit', transaction_id=tx.id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('transactions.delete', transaction_id=tx.id) }}" class="d-inline" onsubmit="return confirm('Delete this transaction?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            No transactions found. <a href="{{ url_for('transactions.create') }}">Add your first transaction</a>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+  <div class="card-footer">
+    <nav aria-label="Transaction pagination">
+      <ul class="pagination justify-content-center mb-0">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('transactions.list_transactions', page=pagination.prev_num, q=filters.q, category=filters.category, date_from=filters.date_from, date_to=filters.date_to, sort=filters.sort, order=filters.order) }}">Previous</a>
+        </li>
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('transactions.list_transactions', page=page_num, q=filters.q, category=filters.category, date_from=filters.date_from, date_to=filters.date_to, sort=filters.sort, order=filters.order) }}">{{ page_num }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('transactions.list_transactions', page=pagination.next_num, q=filters.q, category=filters.category, date_from=filters.date_from, date_to=filters.date_to, sort=filters.sort, order=filters.order) }}">Next</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

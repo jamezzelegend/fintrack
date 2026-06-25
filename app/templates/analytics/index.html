@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - FinTrack{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Deep insights into your financial habits{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="bi bi-trophy"></i></div>
+      <div>
+        <p class="stat-label">Highest Spending Category</p>
+        <h3 class="stat-value h5">{{ stats.highest_category or 'N/A' }}</h3>
+        {% if stats.highest_category %}
+          <small class="text-muted">{{ stats.highest_category_amount | currency }}</small>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+      <div>
+        <p class="stat-label">Largest Expense</p>
+        {% if stats.largest_expense %}
+          <h3 class="stat-value h5">{{ stats.largest_expense.amount | currency }}</h3>
+          <small class="text-muted">{{ stats.largest_expense.description }}</small>
+        {% else %}
+          <h3 class="stat-value h5">N/A</h3>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="bi bi-calendar3"></i></div>
+      <div>
+        <p class="stat-label">Avg Monthly Spending</p>
+        <h3 class="stat-value h5">{{ stats.avg_monthly_spending | currency }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="bi bi-percent"></i></div>
+      <div>
+        <p class="stat-label">Savings Rate</p>
+        <h3 class="stat-value h5 {% if stats.savings_rate >= 0 %}text-success{% else %}text-danger{% endif %}">
+          {{ stats.savings_rate | percent }}
+        </h3>
+        <small class="text-muted">Avg income: {{ stats.avg_monthly_income | currency }}</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-sort-down me-2"></i>Category Spending Rankings</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="categoryRankingsChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-activity me-2"></i>Monthly Trend Analysis</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="analyticsTrendChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card chart-card">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-speedometer me-2"></i>Budget Utilization</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="budgetUtilizationChart" height="80"></canvas>
+        <p class="text-muted small mt-3 mb-0" id="budgetUtilizationEmpty" style="display: none;">
+          No budgets configured. <a href="{{ url_for('budgets.create') }}">Create budgets</a> to see utilization charts.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

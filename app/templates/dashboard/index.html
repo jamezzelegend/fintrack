@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FinTrack{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Your financial overview at a glance{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-sm-6 col-xl">
+    <div class="stat-card stat-income">
+      <div class="stat-icon"><i class="bi bi-arrow-down-circle"></i></div>
+      <div>
+        <p class="stat-label">Total Income</p>
+        <h2 class="stat-value">{{ summary.total_income | currency }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl">
+    <div class="stat-card stat-expense">
+      <div class="stat-icon"><i class="bi bi-arrow-up-circle"></i></div>
+      <div>
+        <p class="stat-label">Total Expenses</p>
+        <h2 class="stat-value">{{ summary.total_expenses | currency }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl">
+    <div class="stat-card stat-balance">
+      <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+      <div>
+        <p class="stat-label">Net Balance</p>
+        <h2 class="stat-value {% if summary.net_balance < 0 %}text-danger{% else %}text-success{% endif %}">
+          {{ summary.net_balance | currency }}
+        </h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl">
+    <div class="stat-card stat-monthly-expense">
+      <div class="stat-icon"><i class="bi bi-calendar-month"></i></div>
+      <div>
+        <p class="stat-label">Monthly Spending</p>
+        <h2 class="stat-value">{{ summary.monthly_expenses | currency }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl">
+    <div class="stat-card stat-monthly-income">
+      <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+      <div>
+        <p class="stat-label">Monthly Income</p>
+        <h2 class="stat-value">{{ summary.monthly_income | currency }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-pie-chart me-2"></i>Expense Breakdown</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="expensePieChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Monthly Trend</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="monthlyTrendChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card chart-card">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-bar-chart me-2"></i>Income vs Expense</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="incomeExpenseChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if budget_data %}
+<div class="row g-4 mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="bi bi-piggy-bank me-2"></i>Budget Overview</h5>
+      <a href="{{ url_for('budgets.list_budgets') }}" class="btn btn-sm btn-outline-primary">Manage Budgets</a>
+    </div>
+  </div>
+  {% for item in budget_data %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card budget-card h-100 {% if item.over_budget %}border-danger{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0">{{ item.budget.category }}</h6>
+          {% if item.over_budget %}
+            <span class="badge bg-danger">Over Budget</span>
+          {% endif %}
+        </div>
+        <div class="d-flex justify-content-between small text-muted mb-2">
+          <span>{{ item.spent | currency }} spent</span>
+          <span>{{ item.budget.monthly_limit | currency }} limit</span>
+        </div>
+        <div class="progress budget-progress" style="height: 8px;">
+          <div class="progress-bar {% if item.over_budget %}bg-danger{% elif item.raw_percentage >= 80 %}bg-warning{% else %}bg-primary{% endif %}"
+               style="width: {{ item.percentage }}%"></div>
+        </div>
+        <p class="small text-muted mt-2 mb-0">{{ item.raw_percentage | round(1) }}% used</p>
+        {% if item.over_budget %}
+        <div class="alert alert-danger py-1 px-2 small mt-2 mb-0">
+          Exceeded by {{ (item.spent - item.budget.monthly_limit) | currency }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_for('transactions.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Add Transaction
+      </a>
+      <a href="{{ url_for('budgets.create') }}" class="btn btn-outline-primary">
+        <i class="bi bi-piggy-bank me-1"></i> Set Budget
+      </a>
+      <a href="{{ url_for('analytics.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-graph-up-arrow me-1"></i> View Analytics
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
