@@ -1,128 +1,111 @@
 # FinTrack
 
-A production-quality personal finance management web application built with Flask, SQLite, SQLAlchemy, Bootstrap 5, and Chart.js.
+FinTrack is a personal finance management application that allows users to track transactions, manage budgets, and visualize spending trends through interactive dashboards and analytics.
+
+The project demonstrates full-stack web development with Flask, SQLAlchemy, authentication, database design, analytics reporting, and cloud deployment.
+
+**[Live Demo](https://your-app.onrender.com)** &nbsp;·&nbsp; Python 3.12 &nbsp;·&nbsp; Flask 3.0
+
+---
 
 ## Features
 
-- **Authentication** — Register, login, logout with password hashing and session management
-- **Dashboard** — Financial summary cards, expense breakdown, monthly trends, and budget overview
-- **Transactions** — Full CRUD with pagination, search, category/date filters, and sorting
-- **Budgets** — Set monthly limits by category with progress bars and over-budget warnings
-- **Analytics** — Spending statistics, category rankings, trend analysis, and budget utilization charts
-- **Profile** — Update email and change password
+- **Dashboard** — Summary of income, expenses, and net balance with interactive charts
+- **Transactions** — Add, edit, and delete transactions with search, category filters, date range filters, and multi-column sorting
+- **Budgets** — Set monthly spending limits per category with real-time usage progress bars and over-budget alerts
+- **Analytics** — Spending breakdowns, category rankings, 12-month income vs expense trends, and budget utilisation charts
+- **Authentication** — Register, log in, and log out with secure password hashing and persistent sessions
+- **Profile** — Update email address and change password
+
+---
 
 ## Tech Stack
 
-- Python / Flask
-- SQLite + SQLAlchemy ORM
-- Flask-Login for session management
-- Flask-WTF for CSRF protection and form validation
-- Bootstrap 5 + Bootstrap Icons
-- Chart.js for interactive visualizations
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, Flask 3.0 |
+| Database | PostgreSQL (production), SQLite (local dev) |
+| ORM | SQLAlchemy via Flask-SQLAlchemy |
+| Auth | Flask-Login |
+| Forms | Flask-WTF, WTForms |
+| Frontend | Bootstrap 5, Bootstrap Icons, Chart.js |
+| Deployment | Render (Gunicorn) |
 
-## Installation
+---
 
-### Prerequisites
+## Screenshots
 
-- Python 3.10 or higher
-- pip
+> Add screenshots here after deployment.
 
-### Setup
+| Dashboard | Transactions | Analytics |
+|---|---|---|
+| *(screenshot)* | *(screenshot)* | *(screenshot)* |
 
-1. Clone or download the project and navigate to the directory:
+---
+
+## Architecture
+
+```
+fintrack/
+├── app/
+│   ├── __init__.py        # Application factory
+│   ├── extensions.py      # Flask extension instances
+│   ├── forms.py           # WTForms form definitions
+│   ├── services.py        # Business logic and analytics queries
+│   ├── models/            # SQLAlchemy models (User, Transaction, Budget)
+│   └── routes/            # Blueprints (auth, dashboard, transactions, budgets, analytics, profile)
+├── config.py              # Config class (reads SECRET_KEY, DATABASE_URL from env)
+├── run.py                 # App entry point
+├── seed.py                # Dev seed script (demo user + sample data)
+└── requirements.txt
+```
+
+The app uses a factory pattern (`create_app()`) with blueprints for each feature area. All database tables are created automatically on first boot via `db.create_all()`.
+
+---
+
+## Local Setup
+
+**Prerequisites:** Python 3.10+
 
 ```bash
+git clone https://github.com/your-username/fintrack.git
 cd fintrack
-```
 
-2. Create and activate a virtual environment (recommended):
-
-```bash
 python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
 
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-3. Install dependencies:
-
-```bash
 pip install -r requirements.txt
+python run.py
 ```
 
-## Database Setup
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
-Seed the database with a demo user, 100 realistic transactions, and sample budgets:
+To seed the database with a demo account and 100 sample transactions:
 
 ```bash
 python seed.py
 ```
 
-This creates a SQLite database at `database/fintrack.db`.
+Demo credentials: username `demo` / password `demo1234`
 
-## Running the Application
+---
 
-Start the development server:
+## Environment Variables
 
-```bash
-python run.py
-```
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | Yes | Flask session signing key. Use a long random string in production. |
+| `DATABASE_URL` | No | Database connection string. Defaults to local SQLite if not set. Render Postgres URLs (`postgres://`) are normalised automatically. |
 
-Open your browser to [http://127.0.0.1:5000](http://127.0.0.1:5000).
+For local development, these can be set in a `.env` file (not committed to source control).
 
-## Demo Credentials
+---
 
-| Field    | Value        |
-|----------|--------------|
-| Username | `demo`       |
-| Password | `demo1234`   |
+## Resume Highlights
 
-You can also register a new account from the registration page.
-
-## Project Structure
-
-```
-fintrack/
-├── app/
-│   ├── __init__.py          # Application factory
-│   ├── extensions.py        # Flask extensions
-│   ├── forms.py               # WTForms definitions
-│   ├── services.py            # Business logic & analytics
-│   ├── models/
-│   │   ├── user.py
-│   │   ├── transaction.py
-│   │   └── budget.py
-│   ├── routes/
-│   │   ├── auth.py
-│   │   ├── dashboard.py
-│   │   ├── transactions.py
-│   │   ├── budgets.py
-│   │   ├── analytics.py
-│   │   └── profile.py
-│   ├── templates/
-│   └── static/
-│       ├── css/
-│       └── js/
-├── database/
-│   └── fintrack.db          # Created after seeding
-├── config.py
-├── seed.py
-├── run.py
-├── requirements.txt
-└── README.md
-```
-
-## Security
-
-- Passwords hashed with Werkzeug
-- CSRF protection on all forms via Flask-WTF
-- Server-side input validation
-- SQLAlchemy ORM prevents SQL injection
-- Users can only access their own data via `user_id` filtering on all queries
-
-## License
-
-MIT
+- Implemented a Flask application factory pattern with Blueprint-based routing, separating concerns across six feature modules
+- Designed a relational schema with three models (User, Transaction, Budget) using SQLAlchemy ORM with foreign keys, unique constraints, and check constraints
+- Built a server-side analytics layer (`services.py`) computing monthly trends, category breakdowns, and savings rate using SQLAlchemy aggregate queries — no external analytics library
+- Secured all routes with Flask-Login session management, CSRF protection on every form via Flask-WTF, and per-query `user_id` filtering to prevent cross-user data access
+- Deployed to Render using Gunicorn with PostgreSQL, handling the SQLAlchemy `postgres://` → `postgresql://` scheme difference between Render's database URLs and SQLAlchemy 2.x
