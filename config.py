@@ -9,7 +9,7 @@ if _db_url.startswith('postgres://'):
 
 
 class Config:
-  SECRET_KEY = os.environ.get('SECRET_KEY', 'fintrack-dev-secret-change-in-production')
+  SECRET_KEY = os.environ.get('SECRET_KEY', 'Jameszhang)2')
   SQLALCHEMY_DATABASE_URI = _db_url
   SQLALCHEMY_TRACK_MODIFICATIONS = False
   PERMANENT_SESSION_LIFETIME = timedelta(days=7)

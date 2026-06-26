@@ -4,7 +4,7 @@ FinTrack is a personal finance management application that allows users to track
 
 The project demonstrates full-stack web development with Flask, SQLAlchemy, authentication, database design, analytics reporting, and cloud deployment.
 
-**[Live Demo](https://your-app.onrender.com)** &nbsp;·&nbsp; Python 3.12 &nbsp;·&nbsp; Flask 3.0
+**[Live Demo](https://FinTrack.onrender.com)** &nbsp;·&nbsp; Python 3.12 &nbsp;·&nbsp; Flask 3.0
 
 ---
 
@@ -69,7 +69,7 @@ The app uses a factory pattern (`create_app()`) with blueprints for each feature
 **Prerequisites:** Python 3.10+
 
 ```bash
-git clone https://github.com/your-username/fintrack.git
+git clone https://github.com/jamezzelegend/fintrack.git
 cd fintrack
 
 python -m venv venv
